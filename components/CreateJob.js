@@ -1,16 +1,23 @@
 import React, {useEffect, useState} from 'react'
 
-import {View, Text, StyleSheet, Image, TextInput, ScrollView, TouchableOpacity} from 'react-native'
+import {View, Text, StyleSheet, Image, TextInput, ScrollView, TouchableOpacity, ToastAndroid} from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons'
 import ImagePicker from 'react-native-image-crop-picker'
 
 function CreateJob() {
     const [image, setImage] = useState()
-    const [name, setName] = useState()
-    const [description, setDescripton] = useState()
-    const [price, setPrice] = useState()
-    const [public_id, setPublicID] = useState()
-    const [secure_url, setSecureUrl] = useState()
+    const [name, setName] = useState('')
+    const [description, setDescripton] = useState('')
+    const [price, setPrice] = useState('')
+    const [public_id, setPublicID] = useState('')
+    const [secure_url, setSecureUrl] = useState('')
+
+    const [isFill, setFill] = useState(true)
+
+    //show toast (Thông báo)
+    const showToast = mess => {
+        ToastAndroid.show(mess, ToastAndroid.LONG, ToastAndroid.CENTER)
+    }
 
     //Hàm xử lý khi mở thư viện ảnh
     const handleOpenGallery = () => {
@@ -41,21 +48,37 @@ function CreateJob() {
         formData.append('upload_preset', 'dealjob')
         formData.append('cloud_name', 'dtd377')
         try {
-            const res = await fetch('https://api.cloudinary.com/v1_1/dtd377/image/upload', {
-                method: 'POST',
-                body: formData,
-                redirect: 'follow',
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            })
-            const resData = await res.json()
-            console.log('Respone from Cloud: ', resData.public_id)
-            console.log('Respone from Cloud: ', resData.secure_url)
-            setPublicID(resData.public_id)
-            setSecureUrl(resData.secure_url)
+            if (isFill) {
+                const res = await fetch('https://api.cloudinary.com/v1_1/dtd377/image/upload', {
+                    method: 'POST',
+                    body: formData,
+                    redirect: 'follow',
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                })
+                const resData = await res.json()
+                setPublicID(resData.public_id)
+                setSecureUrl(resData.secure_url)
+            } else {
+                console.log('Đã upload to cloud nhưng chưa đủ thông tin')
+                console.log(public_id)
+            }
         } catch (error) {
-            console.log('Lỗi fetch: ', error)
+            console.log('Lỗi upload cloud: ', error)
+        } finally {
+            checkFill()
+        }
+    }
+
+    //
+    const checkFill = () => {
+        if (name != '' && description != '' && price != '') {
+            handelPostTask()
+            console.log('Posting task')
+        } else {
+            showToast('Vui lòng điền đủ thông tin')
+            setFill(false)
         }
     }
 
@@ -82,7 +105,7 @@ function CreateJob() {
         }
 
         try {
-            const res = await fetch('http://localhost:3000/taskApi', requestOptions)
+            const res = await fetch('http://10.0.2.2:3000/taskApi', requestOptions)
             const resData = await res.json()
             console.log('Resopnse POST: ', resData)
         } catch (error) {
@@ -93,13 +116,19 @@ function CreateJob() {
     //Hàm xử lý khi mở Camera
     const handleOpenCamera = () => {
         console.log('Camere không khả dụng trên máy ảo')
+        showToast('Camera máy ảo không hoạt động')
     }
 
     return (
         <View style={styles.container}>
             <View>
                 <Text style={styles.labelInput}>Tên công việc</Text>
-                <TextInput style={styles.input} placeholder="Tạo một tên cho công việc mới.." />
+                <TextInput
+                    style={styles.input}
+                    placeholder="Tạo một tên cho công việc mới.."
+                    editale
+                    onChangeText={text => setName(text)}
+                />
             </View>
             <View>
                 <Text style={styles.labelInput}>Nội dung công việc</Text>
@@ -107,11 +136,18 @@ function CreateJob() {
                     style={styles.inputArea}
                     multiline={true}
                     placeholder="Thêm nhiều thông về công việc tại đây..."
+                    editale
+                    onChangeText={text => setDescripton(text)}
                 />
             </View>
             <View>
                 <Text style={styles.labelInput}>Giá tiền</Text>
-                <TextInput style={styles.input} placeholder="Tạo giá để đối tác có thể biết thêm..." />
+                <TextInput
+                    style={styles.input}
+                    placeholder="Tạo giá để đối tác có thể biết thêm..."
+                    editale
+                    onChangeText={text => setPrice(text)}
+                />
             </View>
             <View>
                 <Text style={styles.labelInput}>Thêm ảnh</Text>
