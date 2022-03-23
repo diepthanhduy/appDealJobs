@@ -12,11 +12,9 @@ function CreateJob() {
     const [public_id, setPublicID] = useState('')
     const [secure_url, setSecureUrl] = useState('')
 
-    const [isFill, setFill] = useState(true)
-
     //show toast (Thông báo)
     const showToast = mess => {
-        ToastAndroid.show(mess, ToastAndroid.LONG, ToastAndroid.CENTER)
+        ToastAndroid.show(mess, ToastAndroid.SHORT, ToastAndroid.CENTER)
     }
 
     //Hàm xử lý khi mở thư viện ảnh
@@ -35,55 +33,52 @@ function CreateJob() {
     }
 
     //Hàm Upload ảnh lên Cloudinary
-    const handleUpToCloud = async () => {
+    const handleUpToCloud = () => {
         var newImage = {
             uri: image.path,
             type: image.mime,
             name: `test/${image.path.split('/')[9]}`
         }
 
-        //Upload
+        //Tạo FormData để đem vào body
         const formData = new FormData()
         formData.append('file', newImage)
         formData.append('upload_preset', 'dealjob')
         formData.append('cloud_name', 'dtd377')
-        try {
-            if (isFill) {
-                const res = await fetch('https://api.cloudinary.com/v1_1/dtd377/image/upload', {
-                    method: 'POST',
-                    body: formData,
-                    redirect: 'follow',
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                })
-                const resData = await res.json()
-                setPublicID(resData.public_id)
-                setSecureUrl(resData.secure_url)
-            } else {
-                console.log('Đã upload to cloud nhưng chưa đủ thông tin')
-                console.log(public_id)
+
+        //options của fetch
+        const options = {
+            method: 'POST',
+            body: formData,
+            redirect: 'follow',
+            headers: {
+                'Content-Type': 'multipart/form-data'
             }
-        } catch (error) {
-            console.log('Lỗi upload cloud: ', error)
-        } finally {
-            checkFill()
         }
+
+        fetch('https://api.cloudinary.com/v1_1/dtd377/image/upload', options)
+            .then(res => res.json())
+            .then(dataCloud => {
+                handelPostTask(dataCloud)
+                console.log('Response Cloud: ', dataCloud)
+            })
+            .catch(err => {
+                console.log('Lỗi Upload to Cloud: ', err)
+            })
     }
 
-    //
-    const checkFill = () => {
+    //Hàm xử lý khi nhấn nút Tạo công việc
+    const onPressUpLoad = () => {
         if (name != '' && description != '' && price != '') {
-            handelPostTask()
-            console.log('Posting task')
+            handleUpToCloud()
         } else {
-            showToast('Vui lòng điền đủ thông tin')
-            setFill(false)
+            showToast('Vui lòng nhập đủ thông tin')
         }
     }
 
     //Hàm xử lý đưa data về server (lưu vào DB)
-    const handelPostTask = async () => {
+    const handelPostTask = resCloud => {
+        //Tạo header cho phương thức fetch
         var myHeaders = new Headers()
         myHeaders.append('Content-Type', 'application/json')
 
@@ -93,8 +88,8 @@ function CreateJob() {
             Name: name,
             Description: description,
             Price: price,
-            public_id: public_id,
-            secure_url: secure_url
+            public_id: resCloud.public_id,
+            secure_url: resCloud.secure_url
         })
 
         var requestOptions = {
@@ -104,13 +99,14 @@ function CreateJob() {
             redirect: 'follow'
         }
 
-        try {
-            const res = await fetch('http://10.0.2.2:3000/taskApi', requestOptions)
-            const resData = await res.json()
-            console.log('Resopnse POST: ', resData)
-        } catch (error) {
-            console.log('Lỗi fetch POST: ', error)
-        }
+        fetch('http://10.0.2.2:3000/taskApi', requestOptions)
+            .then(res => res.json())
+            .then(data => {
+                console.log('Response POST: ', data)
+            })
+            .catch(err => {
+                console.log('Lỗi fetch POST', err)
+            })
     }
 
     //Hàm xử lý khi mở Camera
@@ -180,7 +176,8 @@ function CreateJob() {
                     <TouchableOpacity
                         style={styles.addBtn}
                         onPress={() => {
-                            handleUpToCloud()
+                            //Hàm Tạo công việc (up lên Cloud và POST về server)
+                            onPressUpLoad()
                         }}>
                         <Text style={styles.text}>
                             <Icon name="push-outline" size={30} />
