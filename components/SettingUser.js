@@ -13,53 +13,108 @@ function SettingUser() {
     const [urlImg, setUrl] = useState(
         'https://res.cloudinary.com/dtd377/image/upload/v1647939596/unp3nb7epsqnakmo2nod.png'
     )
-
     const [defaultName, setNameDefalt] = useState('Đăng nhập tài khoản')
+    const [isLogin, setIsLogin] = useState(false)
 
+    //show toast (Thông báo)
+    const showToast = mess => {
+        ToastAndroid.show(mess, ToastAndroid.SHORT, ToastAndroid.CENTER)
+    }
+
+    //Khi màn hình này xuất hiện kiểm tra xem đã có đăng nhập hay chưa
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
-            if (typeof global.userData == 'object') {
+            if (typeof global.userData == 'object' && global.userData.UserName != undefined) {
                 setUrl(global.userData.Picture)
                 setNameDefalt(global.userData.FullName)
-                console.log('Picture: ', global.userData.Picture)
+                setIsLogin(true)
             }
         })
 
         return unsubscribe
     }, [navigation])
 
+    //Hàm xử lý đăng xuất
+    const handleLogout = () => {
+        global.userData = {}
+        setUrl('https://res.cloudinary.com/dtd377/image/upload/v1647939596/unp3nb7epsqnakmo2nod.png')
+        setNameDefalt('Đăng nhập tài khoản')
+        setIsLogin(false)
+    }
+
+    //Hàm xử lý khi nhấn info user (nhấn vào ảnh đại diện)
+    const onPressInfo = () => {
+        if (isLogin) {
+            navigation.navigate('InfoUser')
+        }
+    }
+
     return (
         <View style={styles.container}>
-            <View style={styles.box}>
+            <TouchableOpacity
+                style={styles.box}
+                onPress={() => {
+                    onPressInfo()
+                }}>
                 <View style={styles.imgBox}>
                     <Image style={styles.img} source={{uri: urlImg}} />
                 </View>
                 <Text style={styles.textName}>{defaultName}</Text>
-            </View>
-            <View style={styles.box}>
-                <Icon name="call-outline" size={18} style={{marginRight: 16}} />
-                <Text style={styles.text}>0839509898</Text>
-            </View>
-            <View style={styles.box}>
-                <Icon name="location-outline" size={18} style={{marginRight: 16}} />
-                <Text style={styles.text}>675/15/1 Tran Xuan Soan Q7 TP.HCM</Text>
-            </View>
-            <View style={styles.box}>
-                <TouchableOpacity style={styles.btn}>
-                    <Icon name="log-out-outline" size={22} style={{marginRight: 16, color: 'red'}} />
-                    <Text style={[styles.text, {color: 'red'}]}>Đăng xuất</Text>
-                </TouchableOpacity>
-            </View>
-            <View style={styles.box}>
-                <TouchableOpacity
-                    style={styles.btn}
-                    onPress={() => {
-                        navigation.navigate('Login')
-                    }}>
-                    <Icon name="log-in-outline" size={22} style={{marginRight: 16, color: '#24ACF2'}} />
-                    <Text style={[styles.text, {color: '#24ACF2'}]}>Đăng nhập</Text>
-                </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
+
+            {isLogin ? (
+                <View>
+                    <TouchableOpacity
+                        style={styles.boxBtn}
+                        onPress={() => {
+                            navigation.navigate('CreateJob')
+                        }}>
+                        <Icon name="create" size={22} style={{marginRight: 16}} />
+                        <Text style={styles.textBtn}>Tạo công việc</Text>
+                    </TouchableOpacity>
+                    <View style={styles.box}>
+                        <Icon name="call-outline" size={18} style={{marginRight: 16}} />
+                        <Text style={styles.text}>{global.userData.Phone}</Text>
+                    </View>
+                    <View style={styles.box}>
+                        <Icon name="location-outline" size={18} style={{marginRight: 16}} />
+                        <Text style={styles.text}>{global.userData.Address} </Text>
+                    </View>
+                    <View style={styles.box}>
+                        <TouchableOpacity
+                            style={styles.btn}
+                            onPress={() => {
+                                handleLogout()
+                            }}>
+                            <Icon name="log-out-outline" size={22} style={{marginRight: 16, color: 'red'}} />
+                            <Text style={[styles.text, {color: 'red'}]}>Đăng xuất</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            ) : (
+                <View>
+                    <View style={styles.box}>
+                        <TouchableOpacity
+                            style={styles.btn}
+                            onPress={() => {
+                                navigation.navigate('Register')
+                            }}>
+                            <Icon name="person-add-outline" size={22} style={{marginRight: 16, color: '#24ACF2'}} />
+                            <Text style={[styles.text, {color: '#24ACF2'}]}>Đăng ký</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.box}>
+                        <TouchableOpacity
+                            style={styles.btn}
+                            onPress={() => {
+                                navigation.navigate('Login')
+                            }}>
+                            <Icon name="log-in-outline" size={22} style={{marginRight: 16, color: '#24ACF2'}} />
+                            <Text style={[styles.text, {color: '#24ACF2'}]}>Đăng nhập</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
         </View>
     )
 }
@@ -98,6 +153,20 @@ const styles = StyleSheet.create({
     btn: {
         flexDirection: 'row',
         marginLeft: 4
+    },
+    textBtn: {
+        fontSize: 18,
+        fontWeight: 'bold'
+    },
+    boxBtn: {
+        flexDirection: 'row',
+        marginLeft: 12,
+        marginRight: 12,
+        marginTop: 4,
+        marginBottom: 4,
+        alignItems: 'center',
+        backgroundColor: '#FBFFE7',
+        padding: 8
     }
 })
 

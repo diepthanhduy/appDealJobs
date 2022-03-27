@@ -9,7 +9,6 @@ import Ionicons from 'react-native-vector-icons/Ionicons'
 //Import các components
 
 import JobToDetail from './navigation/JobToDetail'
-import CreateJob from './components/CreateJob'
 import Login from './components/Login'
 import Register from './components/Register'
 import SettingUser from './components/SettingUser'

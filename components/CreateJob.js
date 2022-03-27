@@ -1,10 +1,12 @@
+import 'react-native-gesture-handler'
+
 import React, {useEffect, useState} from 'react'
 
 import {View, Text, StyleSheet, Image, TextInput, ScrollView, TouchableOpacity, ToastAndroid} from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons'
 import ImagePicker from 'react-native-image-crop-picker'
 
-function CreateJob() {
+function CreateJob({navigation}) {
     const [image, setImage] = useState()
     const [name, setName] = useState('')
     const [description, setDescripton] = useState('')
@@ -40,11 +42,11 @@ function CreateJob() {
             name: `test/${image.path.split('/')[9]}`
         }
 
-        //Tạo FormData để đem vào body
+        //Tạo FormData để đưa vào body
         const formData = new FormData()
         formData.append('file', newImage)
-        formData.append('upload_preset', 'dealjob')
-        formData.append('cloud_name', 'dtd377')
+        formData.append('upload_preset', process.env.PRESET_NAME)
+        formData.append('cloud_name', process.env.CLOUD_NAME)
 
         //options của fetch
         const options = {

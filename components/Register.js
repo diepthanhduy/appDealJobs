@@ -1,8 +1,9 @@
+import 'react-native-gesture-handler'
 import React, {useEffect, useState} from 'react'
 
 import {View, Text, StyleSheet, Image, TextInput, ScrollView, TouchableOpacity, ToastAndroid} from 'react-native'
 
-function Login() {
+function Login({navigation}) {
     const [fullName, setFullName] = useState('')
     const [user, setUser] = useState('')
     const [pass, setPass] = useState('')
@@ -35,6 +36,10 @@ function Login() {
                     showToast('Vui lòng chọn tên đăng nhập khác')
                 } else {
                     showToast(`Xin chào ${result.FullName}`)
+
+                    //Chuyển về trang Setting, và tạo biến userData lại
+                    navigation.goBack()
+                    global.userData = result
                 }
             })
             .catch(error => console.log('error', error))
