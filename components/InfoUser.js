@@ -2,17 +2,38 @@ import 'react-native-gesture-handler'
 
 import React, {useEffect, useState} from 'react'
 
-import {View, Text, StyleSheet, Image, TextInput, ScrollView, TouchableOpacity, ToastAndroid} from 'react-native'
+import {
+    View,
+    Text,
+    StyleSheet,
+    ActivityIndicator,
+    Image,
+    TextInput,
+    ScrollView,
+    TouchableOpacity,
+    ToastAndroid
+} from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons'
 import ImagePicker from 'react-native-image-crop-picker'
 
 function InfoUser({navigation}) {
-    const [image, setImage] = useState()
+    const [image, setImage] = useState(global.userData.Picture) // Lưu Url của ảnh
+    const [fullName, setFullName] = useState('')
+    const [phone, setPhone] = useState('')
+    const [address, setAddress] = useState('')
+    const [description, setDescription] = useState('')
+    const [expectedPrice, setExpectedPrice] = useState('') //Tiền
 
-    //Khi màn hình xuất hiện
+    const [dataImg, setDataImg] = useState('') // tất cả thông tin của cái ảnh mới khi được chọn
+
+    const [isChangeImg, setIsChangeImg] = useState(false)
+
+    const [isPuting, setIsPuting] = useState(false)
+
+    //Khi màn hình xuất hiện. Hàm này sẽ được thực thi
     useEffect(() => {
-        setImage(global.userData.Picture)
-        console.log('Xuất hiện screen')
+        //setImage(global.userData.Picture)
+        console.log('Màn hình InfoUser')
     }, [])
 
     //onpress image (Hàm khi nhấn vào ảnh)
@@ -25,6 +46,34 @@ function InfoUser({navigation}) {
         ToastAndroid.show(mess, ToastAndroid.SHORT, ToastAndroid.CENTER)
     }
 
+    //Hàm kiểm tra xem text input nào thay đổi
+    const handleCheckChange = data => {
+        //Tạo một Obj có tất cả các trường có thể thay đổi được
+        const allTextInput = {
+            _id: global.userData._id,
+            FullName: fullName,
+            Phone: phone,
+            Address: address,
+            Description: description,
+            ExpectedPrice: expectedPrice,
+            public_id: data.public_id,
+            Picture: data.secure_url
+        }
+        //Khởi tạo obj này lưu các trường được thay đổi
+        var dataUpdate = {}
+        //Kiểm tra xem trường nào được thay đổi thì đưa vào dataUpdate
+        for (const [key, value] of Object.entries(allTextInput)) {
+            if (value != '') {
+                dataUpdate[key] = value
+            }
+        }
+        if (isChangeImg) {
+            dataUpdate['public_id_old'] = global.userData.public_id
+        }
+        //Trả về obj là các trường bị thay đổi
+        return dataUpdate
+    }
+
     //Hàm xử lý khi mở thư viện ảnh
     const handleOpenGallery = () => {
         ImagePicker.openPicker({
@@ -33,74 +82,174 @@ function InfoUser({navigation}) {
         })
             .then(data => {
                 //Lấy ảnh từ thư viện (data) thành công
-                setImage(data.path)
+                setImage(data.path) //để hiện thị ra màn hình
+                setDataImg(data) //để lấy data post
+                setIsChangeImg(true)
+                console.log('Đã chọn ảnh mới')
             })
             .catch(err => {
                 console.log('Lỗi mở Lib: ' + err)
             })
     }
 
+    //Hàm Upload ảnh lên Cloudinary
+    const handleUpToCloud = () => {
+        var newImage = {
+            uri: dataImg.path,
+            type: dataImg.mime,
+            name: `test/${dataImg.path.split('/')[9]}`
+        }
+
+        //Tạo FormData để đưa vào body
+        const formData = new FormData()
+        formData.append('file', newImage)
+        formData.append('upload_preset', 'dealjob')
+        formData.append('cloud_name', 'dtd377')
+
+        //options của fetch
+        const options = {
+            method: 'POST',
+            body: formData,
+            redirect: 'follow',
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        }
+
+        fetch('https://api.cloudinary.com/v1_1/dtd377/image/upload', options)
+            .then(res => res.json())
+            .then(dataCloud => {
+                setIsPuting(true)
+                //console.log('Response Cloud: ', dataCloud)
+                return dataCloud
+            })
+            .then(dataCloud => {
+                const data = handleCheckChange(dataCloud)
+                return data
+            })
+            .then(data => {
+                handlePut(data)
+            })
+            .catch(err => {
+                console.log('Lỗi Upload to Cloud: ', err)
+            })
+    }
+
+    //PUT api
+    const handlePut = dataRaw => {
+        const raw = JSON.stringify(dataRaw)
+        const requestOptions = {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: raw,
+            redirect: 'follow'
+        }
+        fetch('http://10.0.2.2:3000/user/update', requestOptions)
+            .then(response => response.json())
+            .then(result => {
+                global.userData = result
+                console.log('Resopnse from PUT: ', result)
+                setIsPuting(false)
+            })
+            .catch(error => console.log('error', error))
+    }
+
+    //onPress Xác nhận
+    const onPressXacNhan = () => {
+        if (isChangeImg) {
+            setIsPuting(true)
+            handleUpToCloud()
+        } else {
+            setIsPuting(true)
+            const obj = handleCheckChange({public_id: '', secure_url: ''})
+            handlePut(obj)
+        }
+    }
+
     return (
-        <ScrollView style={styles.container}>
-            <View>
-                <Text style={styles.title}>Ảnh</Text>
-                <TouchableOpacity
-                    style={styles.imgBtn}
-                    onPress={() => {
-                        onPressImg()
-                    }}>
-                    <Image source={{uri: image}} style={styles.img} />
-                </TouchableOpacity>
-            </View>
+        <ScrollView style={styles.container} keyboardShouldPersistTaps="always">
+            {isPuting ? (
+                <ActivityIndicator />
+            ) : (
+                <View>
+                    <View>
+                        <Text style={styles.title}>Ảnh</Text>
+                        <TouchableOpacity
+                            style={styles.imgBtn}
+                            onPress={() => {
+                                onPressImg()
+                            }}>
+                            <Image source={{uri: image}} style={styles.img} />
+                        </TouchableOpacity>
+                    </View>
 
-            <View style={styles.marTop}>
-                <Text style={styles.title}>Tên</Text>
-                <TextInput
-                    style={styles.textBox}
-                    editable
-                    maxLength={40}
-                    placeholder="Tên người dùng"
-                    value={global.userData.FullName}
-                />
-            </View>
+                    <View style={styles.marTop}>
+                        <Text style={styles.title}>Tên</Text>
+                        <TextInput
+                            style={styles.textBox}
+                            editable
+                            maxLength={40}
+                            placeholder={global.userData.FullName}
+                            onChangeText={text => setFullName(text)}
+                        />
+                    </View>
 
-            <View style={styles.marTop}>
-                <Text style={styles.title}>Số điện thoại</Text>
-                <TextInput
-                    style={styles.textBox}
-                    editable
-                    maxLength={40}
-                    placeholder="Số điện thoại"
-                    value={global.userData.Phone}
-                />
-            </View>
+                    <View style={styles.marTop}>
+                        <Text style={styles.title}>Số điện thoại</Text>
+                        <TextInput
+                            style={styles.textBox}
+                            editable
+                            maxLength={40}
+                            placeholder={global.userData.Phone}
+                            onChangeText={text => setPhone(text)}
+                        />
+                    </View>
 
-            <View style={styles.marTop}>
-                <Text style={styles.title}>Địa chỉ</Text>
-                <TextInput
-                    style={styles.textBox}
-                    editable
-                    maxLength={40}
-                    placeholder="Địa chỉ"
-                    value={global.userData.Address}
-                />
-            </View>
+                    <View style={styles.marTop}>
+                        <Text style={styles.title}>Địa chỉ</Text>
+                        <TextInput
+                            style={styles.textBox}
+                            editable
+                            maxLength={40}
+                            placeholder={global.userData.Address}
+                            onChangeText={text => setAddress(text)}
+                        />
+                    </View>
 
-            <View style={styles.marTop}>
-                <Text style={styles.title}>Miêu tả</Text>
-                <TextInput style={styles.textBox} editable maxLength={500} placeholder="Mô tả công việc" />
-            </View>
+                    <View style={styles.marTop}>
+                        <Text style={styles.title}>Miêu tả</Text>
+                        <TextInput
+                            style={styles.textBox}
+                            editable
+                            maxLength={500}
+                            placeholder={global.userData.Description}
+                            onChangeText={text => setDescription(text)}
+                        />
+                    </View>
 
-            <View style={styles.marTop}>
-                <Text style={styles.title}>Tiền</Text>
-                <TextInput style={styles.textBox} editable maxLength={10} placeholder="Số tiền cho việc này" />
-            </View>
-
-            <View style={[styles.marTop, {alignItems: 'center'}]}>
-                <TouchableOpacity style={styles.button}>
-                    <Text style={styles.text}>Xác nhận</Text>
-                </TouchableOpacity>
-            </View>
+                    <View style={styles.marTop}>
+                        <Text style={styles.title}>Tiền</Text>
+                        <TextInput
+                            style={styles.textBox}
+                            editable
+                            maxLength={10}
+                            placeholder={global.userData.ExpectedPrice}
+                            onChangeText={text => setExpectedPrice(text)}
+                        />
+                    </View>
+                    <View style={{alignItems: 'center'}}>
+                        <TouchableOpacity
+                            style={[styles.button, styles.marTop]}
+                            onPress={() => {
+                                onPressXacNhan()
+                            }}>
+                            <Text style={styles.text}>Xác nhận</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
         </ScrollView>
     )
 }

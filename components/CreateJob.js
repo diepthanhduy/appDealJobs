@@ -45,8 +45,8 @@ function CreateJob({navigation}) {
         //Tạo FormData để đưa vào body
         const formData = new FormData()
         formData.append('file', newImage)
-        formData.append('upload_preset', process.env.PRESET_NAME)
-        formData.append('cloud_name', process.env.CLOUD_NAME)
+        formData.append('upload_preset', 'dealjob')
+        formData.append('cloud_name', 'dtd377')
 
         //options của fetch
         const options = {

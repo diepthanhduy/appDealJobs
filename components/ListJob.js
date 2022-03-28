@@ -61,7 +61,7 @@ function ListJob() {
     }, [])
 
     return (
-        <View>
+        <View style={{backgroundColor: '#F3FFBD'}}>
             {isLoading ? (
                 <ActivityIndicator />
             ) : (
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
         marginTop: 12,
         marginLeft: 8,
         marginRight: 8,
-        backgroundColor: '#BDB515'
+        backgroundColor: '#FBFFE7'
     },
     frameName: {
         marginTop: 4,

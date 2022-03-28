@@ -10,10 +10,10 @@ import {useNavigation} from '@react-navigation/native'
 function SettingUser() {
     const navigation = useNavigation()
 
-    const [urlImg, setUrl] = useState(
-        'https://res.cloudinary.com/dtd377/image/upload/v1647939596/unp3nb7epsqnakmo2nod.png'
-    )
+    const [urlImg, setUrl] = useState()
     const [defaultName, setNameDefalt] = useState('Đăng nhập tài khoản')
+    const [phone, setPhone] = useState()
+    const [address, setAddress] = useState()
     const [isLogin, setIsLogin] = useState(false)
 
     //show toast (Thông báo)
@@ -27,7 +27,11 @@ function SettingUser() {
             if (typeof global.userData == 'object' && global.userData.UserName != undefined) {
                 setUrl(global.userData.Picture)
                 setNameDefalt(global.userData.FullName)
+                setPhone(global.userData.Phone)
+                setAddress(global.userData.Address)
                 setIsLogin(true)
+            } else {
+                setUrl('https://res.cloudinary.com/dtd377/image/upload/v1647939596/unp3nb7epsqnakmo2nod.png')
             }
         })
 
