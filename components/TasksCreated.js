@@ -18,11 +18,9 @@ import {
 
 import {useNavigation} from '@react-navigation/native'
 
-function ListJob() {
+function TasksCreated() {
     const [isLoading, setLoading] = useState(true)
     const [dataTask, setData] = useState([])
-
-    const navigation = useNavigation()
 
     //show toast (Thông báo)
     const showToast = mess => {
@@ -32,15 +30,21 @@ function ListJob() {
     //Hàm call api GET list Task
     const handleGetTask = async () => {
         //option fetch
-        const requestOptions = {
-            method: 'GET',
+
+        var raw = JSON.stringify({
+            IDCreator: global.userData._id
+        })
+
+        var requestOptions = {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
+            body: raw,
             redirect: 'follow'
         }
 
-        fetch('http://10.0.2.2:3000/task', requestOptions)
+        fetch('http://10.0.2.2:3000/task/task-created', requestOptions)
             .then(res => res.json())
             .then(data => {
                 console.log('Response GET: Success')
@@ -167,4 +171,4 @@ const styles = StyleSheet.create({
     }
 })
 
-export default ListJob
+export default TasksCreated

@@ -8,6 +8,8 @@ import Login from '../components/Login'
 import CreateJob from '../components/CreateJob'
 import InfoUser from '../components/InfoUser'
 import Register from '../components/Register'
+import TasksBooked from '../components/TasksBooked'
+import TasksCreated from '../components/TasksCreated'
 
 const Stack = createStackNavigator()
 
@@ -22,6 +24,8 @@ function JobToDetail() {
             <Stack.Screen name="CreateJob" component={CreateJob} />
             <Stack.Screen name="InfoUser" component={InfoUser} />
             <Stack.Screen name="Register" component={Register} />
+            <Stack.Screen name="TasksBooked" component={TasksBooked} />
+            <Stack.Screen name="TasksCreated" component={TasksCreated} />
         </Stack.Navigator>
     )
 }

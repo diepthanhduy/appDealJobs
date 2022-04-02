@@ -73,8 +73,24 @@ function SettingUser() {
                         onPress={() => {
                             navigation.navigate('CreateJob')
                         }}>
-                        <Icon name="create" size={22} style={{marginRight: 16}} />
+                        <Icon name="add-circle" size={22} style={{marginRight: 16}} />
                         <Text style={styles.textBtn}>Tạo công việc</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.boxBtn}
+                        onPress={() => {
+                            navigation.navigate('TasksCreated')
+                        }}>
+                        <Icon name="layers" size={22} style={{marginRight: 16}} />
+                        <Text style={styles.textBtn}>Công việc đã tạo</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.boxBtn}
+                        onPress={() => {
+                            navigation.navigate('TasksBooked')
+                        }}>
+                        <Icon name="clipboard" size={22} style={{marginRight: 16}} />
+                        <Text style={styles.textBtn}>Công việc đã book</Text>
                     </TouchableOpacity>
                     <View style={styles.box}>
                         <Icon name="call-outline" size={18} style={{marginRight: 16}} />

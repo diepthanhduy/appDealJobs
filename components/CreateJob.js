@@ -2,7 +2,17 @@ import 'react-native-gesture-handler'
 
 import React, {useEffect, useState} from 'react'
 
-import {View, Text, StyleSheet, Image, TextInput, ScrollView, TouchableOpacity, ToastAndroid} from 'react-native'
+import {
+    View,
+    Text,
+    StyleSheet,
+    Image,
+    TextInput,
+    ScrollView,
+    TouchableOpacity,
+    ActivityIndicator,
+    ToastAndroid
+} from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons'
 import ImagePicker from 'react-native-image-crop-picker'
 
@@ -13,6 +23,7 @@ function CreateJob({navigation}) {
     const [price, setPrice] = useState('')
     const [public_id, setPublicID] = useState('')
     const [secure_url, setSecureUrl] = useState('')
+    const [isLoading, setLoading] = useState(false)
 
     //show toast (Thông báo)
     const showToast = mess => {
@@ -69,15 +80,6 @@ function CreateJob({navigation}) {
             })
     }
 
-    //Hàm xử lý khi nhấn nút Tạo công việc
-    const onPressUpLoad = () => {
-        if (name != '' && description != '' && price != '') {
-            handleUpToCloud()
-        } else {
-            showToast('Vui lòng nhập đủ thông tin')
-        }
-    }
-
     //Hàm xử lý đưa data về server (lưu vào DB)
     const handelPostTask = resCloud => {
         //Tạo header cho phương thức fetch
@@ -91,7 +93,11 @@ function CreateJob({navigation}) {
             Description: description,
             Price: price,
             public_id: resCloud.public_id,
-            secure_url: resCloud.secure_url
+            secure_url: resCloud.secure_url,
+            PhoneCreator: global.userData.Phone,
+            NameCreator: global.userData.FullName,
+            AddressCreator: global.userData.Address,
+            IDCreator: global.userData._id
         })
 
         var requestOptions = {
@@ -101,10 +107,11 @@ function CreateJob({navigation}) {
             redirect: 'follow'
         }
 
-        fetch('http://10.0.2.2:3000/taskApi', requestOptions)
+        fetch('http://10.0.2.2:3000/task', requestOptions)
             .then(res => res.json())
             .then(data => {
                 console.log('Response POST: ', data)
+                setLoading(false)
             })
             .catch(err => {
                 console.log('Lỗi fetch POST', err)
@@ -117,78 +124,94 @@ function CreateJob({navigation}) {
         showToast('Camera máy ảo không hoạt động')
     }
 
+    //Hàm xử lý khi nhấn nút Tạo công việc
+    const onPressUpLoad = () => {
+        if (name != '' && description != '' && price != '') {
+            setLoading(true)
+            handleUpToCloud()
+        } else {
+            showToast('Vui lòng nhập đủ thông tin')
+        }
+    }
+
     return (
         <View style={styles.container}>
-            <View>
-                <Text style={styles.labelInput}>Tên công việc</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Tạo một tên cho công việc mới.."
-                    editale
-                    onChangeText={text => setName(text)}
-                />
-            </View>
-            <View>
-                <Text style={styles.labelInput}>Nội dung công việc</Text>
-                <TextInput
-                    style={styles.inputArea}
-                    multiline={true}
-                    placeholder="Thêm nhiều thông về công việc tại đây..."
-                    editale
-                    onChangeText={text => setDescripton(text)}
-                />
-            </View>
-            <View>
-                <Text style={styles.labelInput}>Giá tiền</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Tạo giá để đối tác có thể biết thêm..."
-                    editale
-                    onChangeText={text => setPrice(text)}
-                />
-            </View>
-            <View>
-                <Text style={styles.labelInput}>Thêm ảnh</Text>
-            </View>
-            <View style={styles.boxAdd}>
-                <TouchableOpacity
-                    style={styles.addBtn}
-                    onPress={() => {
-                        handleOpenGallery()
-                    }}>
-                    <Text style={styles.text}>
-                        <Icon name="image-outline" size={30} />
-                        Thư viện
-                    </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.addBtn}
-                    onPress={() => {
-                        handleOpenCamera()
-                    }}>
-                    <Text style={styles.text}>
-                        <Icon name="camera-outline" size={30} />
-                        Camera
-                    </Text>
-                </TouchableOpacity>
-            </View>
-            {image ? (
-                <View style={styles.boxImg}>
-                    <Image style={styles.img} source={{uri: image.path}} />
-                    <TouchableOpacity
-                        style={styles.addBtn}
-                        onPress={() => {
-                            //Hàm Tạo công việc (up lên Cloud và POST về server)
-                            onPressUpLoad()
-                        }}>
-                        <Text style={styles.text}>
-                            <Icon name="push-outline" size={30} />
-                            Tạo việc làm
-                        </Text>
-                    </TouchableOpacity>
-                </View>
+            {isLoading ? (
+                <ActivityIndicator />
             ) : (
-                <View></View>
+                <View>
+                    <View>
+                        <Text style={styles.labelInput}>Tên công việc</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Tạo một tên cho công việc mới.."
+                            editale
+                            onChangeText={text => setName(text)}
+                        />
+                    </View>
+                    <View>
+                        <Text style={styles.labelInput}>Nội dung công việc</Text>
+                        <TextInput
+                            style={styles.inputArea}
+                            multiline={true}
+                            placeholder="Thêm nhiều thông về công việc tại đây..."
+                            editale
+                            onChangeText={text => setDescripton(text)}
+                        />
+                    </View>
+                    <View>
+                        <Text style={styles.labelInput}>Giá tiền</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Tạo giá để đối tác có thể biết thêm..."
+                            editale
+                            onChangeText={text => setPrice(text)}
+                        />
+                    </View>
+                    <View>
+                        <Text style={styles.labelInput}>Thêm ảnh</Text>
+                    </View>
+                    <View style={styles.boxAdd}>
+                        <TouchableOpacity
+                            style={styles.addBtn}
+                            onPress={() => {
+                                handleOpenGallery()
+                            }}>
+                            <Text style={styles.text}>
+                                <Icon name="image-outline" size={30} />
+                                Thư viện
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.addBtn}
+                            onPress={() => {
+                                handleOpenCamera()
+                            }}>
+                            <Text style={styles.text}>
+                                <Icon name="camera-outline" size={30} />
+                                Camera
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                    {image ? (
+                        <View style={styles.boxImg}>
+                            <Image style={styles.img} source={{uri: image.path}} />
+                            <TouchableOpacity
+                                style={styles.addBtn}
+                                onPress={() => {
+                                    //Hàm Tạo công việc (up lên Cloud và POST về server)
+                                    onPressUpLoad()
+                                }}>
+                                <Text style={styles.text}>
+                                    <Icon name="push-outline" size={30} />
+                                    Tạo việc làm
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <View></View>
+                    )}
+                </View>
             )}
         </View>
     )
