@@ -15,6 +15,7 @@ import {
 } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons'
 import ImagePicker from 'react-native-image-crop-picker'
+import GetLocation from 'react-native-get-location'
 
 function CreateJob({navigation}) {
     const [image, setImage] = useState()
@@ -29,6 +30,9 @@ function CreateJob({navigation}) {
     const showToast = mess => {
         ToastAndroid.show(mess, ToastAndroid.SHORT, ToastAndroid.CENTER)
     }
+    /*====================CHÚ Ý ============================
+    BƯỚC 1: handleUpToCloud => BƯỚC 2: lấy location => BƯỚC 3: handelPostTask
+    ========================================================*/
 
     //Hàm xử lý khi mở thư viện ảnh
     const handleOpenGallery = () => {
@@ -72,11 +76,31 @@ function CreateJob({navigation}) {
         fetch('https://api.cloudinary.com/v1_1/dtd377/image/upload', options)
             .then(res => res.json())
             .then(dataCloud => {
-                handelPostTask(dataCloud)
-                console.log('Response Cloud: ', dataCloud)
+                console.log('RES: ', dataCloud)
+                handleGetLocation(dataCloud)
             })
             .catch(err => {
                 console.log('Lỗi Upload to Cloud: ', err)
+            })
+    }
+
+    //Hàm lấy vị trí hiện tại
+    const handleGetLocation = cloud => {
+        GetLocation.getCurrentPosition({
+            enableHighAccuracy: false,
+            timeout: 15000
+        })
+            .then(location => {
+                cloud['Latitude'] = location.latitude
+                cloud['Longitude'] = location.longitude
+                handelPostTask(cloud)
+            })
+            .catch(error => {
+                handelPostTask(cloud)
+                const {code, message} = error
+                if (code == 'UNAUTHORIZED') {
+                    showToast('Không lấy được vị trí hiện tại')
+                }
             })
     }
 
@@ -97,7 +121,9 @@ function CreateJob({navigation}) {
             PhoneCreator: global.userData.Phone,
             NameCreator: global.userData.FullName,
             AddressCreator: global.userData.Address,
-            IDCreator: global.userData._id
+            IDCreator: global.userData._id,
+            Latitude: resCloud.Latitude,
+            Longitude: resCloud.Longitude
         })
 
         var requestOptions = {
@@ -111,10 +137,12 @@ function CreateJob({navigation}) {
             .then(res => res.json())
             .then(data => {
                 console.log('Response POST: ', data)
-                setLoading(false)
             })
             .catch(err => {
                 console.log('Lỗi fetch POST', err)
+            })
+            .finally(() => {
+                setLoading(false)
             })
     }
 
@@ -135,7 +163,7 @@ function CreateJob({navigation}) {
     }
 
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container} keyboardShouldPersistTaps="always">
             {isLoading ? (
                 <ActivityIndicator />
             ) : (
@@ -213,13 +241,12 @@ function CreateJob({navigation}) {
                     )}
                 </View>
             )}
-        </View>
+        </ScrollView>
     )
 }
 
 const styles = StyleSheet.create({
     container: {
-        paddingTop: 12,
         backgroundColor: '#F3FFBD',
         height: '100%'
     },
