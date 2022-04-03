@@ -77,15 +77,14 @@ function ListJob() {
                                     Description: item.Description,
                                     secure_url: item.secure_url,
                                     Price: item.Price,
-                                    NameCreator: item.NameCreator
+                                    NameCreator: item.NameCreator,
+                                    Latitude: item.Latitude ? item.Latitude : '',
+                                    Longitude: item.Longitude ? item.Longitude : ''
                                 })
                             }}>
                             <View style={styles.item}>
                                 <View style={styles.frameUser}>
-                                    <View style={styles.imgBox}>
-                                        <Image style={styles.img} source={{uri: item.secure_url}} />
-                                    </View>
-                                    <Text style={styles.userName}>{item.NameCreator}</Text>
+                                    <Text style={styles.userName}>Job of: {item.NameCreator}</Text>
                                 </View>
                                 <View style={styles.line}></View>
                                 <View style={styles.frameName}>
@@ -135,16 +134,6 @@ const styles = StyleSheet.create({
     },
     description: {
         color: '#000'
-    },
-    img: {
-        width: '100%',
-        height: 34,
-        borderRadius: 50
-    },
-    imgBox: {
-        width: 34,
-        height: 34,
-        marginRight: 8
     },
     frameUser: {
         marginTop: 12,

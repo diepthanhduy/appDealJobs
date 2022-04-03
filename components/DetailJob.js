@@ -18,6 +18,7 @@ const {width} = Dimensions.get('window')
 function DetailJob({navigation, route}) {
     const [isLoading, setLoading] = useState(false)
     const [isLogin, setIsLogin] = useState(false)
+    const [isMap, setIsMap] = useState(false)
 
     //show toast (Thông báo)
     const showToast = mess => {
@@ -30,7 +31,8 @@ function DetailJob({navigation, route}) {
             console.log('Man hinh DetailJob')
             if (typeof global.userData == 'object' && global.userData.UserName != undefined) {
                 setIsLogin(true)
-            } else {
+            } else if (route.params.Latitude != '') {
+                setIsMap(true)
             }
         })
 
@@ -101,6 +103,20 @@ function DetailJob({navigation, route}) {
                             <Text style={{fontSize: 18}}>Nhận việc này</Text>
                         </TouchableOpacity>
                     </View>
+                    {isMap ? (
+                        <View style={{alignItems: 'center', marginTop: 12}}>
+                            <Text
+                                style={{fontSize: 16, textDecorationLine: 'underline'}}
+                                onPress={() => {
+                                    navigation.navigate('Map', {
+                                        Latitude: route.params.Latitude,
+                                        Longitude: route.params.Longitude
+                                    })
+                                }}>
+                                Xem địa chỉ
+                            </Text>
+                        </View>
+                    ) : null}
                 </View>
             )}
         </View>
