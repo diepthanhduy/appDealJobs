@@ -84,7 +84,7 @@ function InfoUser({navigation}) {
                 //Lấy ảnh từ thư viện (data) thành công
                 setImage(data.path) //để hiện thị ra màn hình
                 setDataImg(data) //để lấy data post
-                setIsChangeImg(true)
+                setIsChangeImg(true) //Thay đổi trạng thái là đã có chọn ảnh
                 console.log('Đã chọn ảnh mới')
             })
             .catch(err => {
@@ -128,7 +128,7 @@ function InfoUser({navigation}) {
                 return data
             })
             .then(data => {
-                handlePut(data)
+                handlePut(data) //lấy được url ảnh trên cloud sau đó đẩy về server
             })
             .catch(err => {
                 console.log('Lỗi Upload to Cloud: ', err)
@@ -159,9 +159,11 @@ function InfoUser({navigation}) {
     //onPress Xác nhận
     const onPressXacNhan = () => {
         if (isChangeImg) {
+            /*Nếu có thay đổi ảnh thì up ảnh lên cloud trước*/
             setIsPuting(true)
             handleUpToCloud()
         } else {
+            /*Nếu ko có up ảnh lên thì chỉ chạy 1 hàm đẩy vể server với url ''*/
             setIsPuting(true)
             const obj = handleCheckChange({public_id: '', secure_url: ''})
             handlePut(obj)
