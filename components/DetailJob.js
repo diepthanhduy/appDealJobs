@@ -19,6 +19,7 @@ function DetailJob({navigation, route}) {
     const [isLoading, setLoading] = useState(false)
     const [isLogin, setIsLogin] = useState(false)
     const [isMap, setIsMap] = useState(false)
+    const [isShowbtn, setIsShowbtn] = useState(route.params.ShowOnly)
 
     //show toast (Thông báo)
     const showToast = mess => {
@@ -39,14 +40,16 @@ function DetailJob({navigation, route}) {
         return unsubscribe
     }, [navigation])
 
-    //HÀm xử lý update task
+    //HÀm xử lý update task nhận công việc
     const handleBook = () => {
         var raw = JSON.stringify({
-            IDUser: global.userData._id
+            _id: route.params._id,
+            IDUserBook: global.userData._id,
+            StatusBook: 1
         })
 
         var requestOptions = {
-            method: 'POST',
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -54,7 +57,7 @@ function DetailJob({navigation, route}) {
             redirect: 'follow'
         }
 
-        fetch('http://localhost:3000/task/task-booked', requestOptions)
+        fetch('http://10.0.2.2:3000/task/update', requestOptions)
             .then(response => response.json())
             .then(result => {
                 setLoading(false)
@@ -94,15 +97,17 @@ function DetailJob({navigation, route}) {
                     <View>
                         <Text style={styles.text}>Tiền công {route.params.Price}</Text>
                     </View>
-                    <View style={{alignItems: 'center', marginTop: 24}}>
-                        <TouchableOpacity
-                            style={styles.btnBox}
-                            onPress={() => {
-                                onPressNhanViecNay()
-                            }}>
-                            <Text style={{fontSize: 18}}>Nhận việc này</Text>
-                        </TouchableOpacity>
-                    </View>
+                    {isShowbtn ? (
+                        <View style={{alignItems: 'center', marginTop: 24}}>
+                            <TouchableOpacity
+                                style={styles.btnBox}
+                                onPress={() => {
+                                    onPressNhanViecNay()
+                                }}>
+                                <Text style={{fontSize: 18}}>Nhận việc này</Text>
+                            </TouchableOpacity>
+                        </View>
+                    ) : null}
                     {isMap ? (
                         <View style={{alignItems: 'center', marginTop: 12}}>
                             <Text

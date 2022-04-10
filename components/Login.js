@@ -34,6 +34,7 @@ function Login({navigation}) {
                 } else {
                     showToast(`Xin chào ${data[0].FullName}`)
                     global.userData = data[0]
+                    console.log('_id: ', global.userData._id)
                     navigation.goBack()
                 }
             })

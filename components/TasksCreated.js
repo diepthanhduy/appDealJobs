@@ -21,6 +21,7 @@ import {useNavigation} from '@react-navigation/native'
 function TasksCreated() {
     const [isLoading, setLoading] = useState(true)
     const [dataTask, setData] = useState([])
+    const navigation = useNavigation()
 
     //show toast (Thông báo)
     const showToast = mess => {
@@ -61,49 +62,58 @@ function TasksCreated() {
 
     //Call api
     useEffect(() => {
-        handleGetTask()
-    }, [])
+        const unsubscribe = navigation.addListener('focus', () => {
+            console.log('Man hinh DetailJob')
+            handleGetTask()
+        })
+
+        return unsubscribe
+    }, [navigation])
 
     return (
         <View style={{backgroundColor: '#F3FFBD'}}>
             {isLoading ? (
                 <ActivityIndicator />
             ) : (
-                <FlatList
-                    style={styles.scroll}
-                    data={dataTask}
-                    keyExtractor={item => item._id}
-                    renderItem={({item}) => (
-                        <TouchableOpacity
-                            onPress={() => {
-                                navigation.navigate('DetailJob', {
-                                    Name: item.Name,
-                                    Description: item.Description,
-                                    secure_url: item.secure_url,
-                                    Price: item.Price,
-                                    NameCreator: item.NameCreator
-                                })
-                            }}>
-                            <View style={styles.item}>
-                                <View style={styles.frameUser}>
-                                    <View style={styles.imgBox}>
-                                        <Image style={styles.img} source={{uri: item.secure_url}} />
+                <View>
+                    <Text style={styles.title}>Công việc đã tạo</Text>
+                    <FlatList
+                        style={styles.scroll}
+                        data={dataTask}
+                        keyExtractor={item => item._id}
+                        renderItem={({item}) => (
+                            <TouchableOpacity
+                                onPress={() => {
+                                    navigation.navigate('DetailJob', {
+                                        ShowOnly: false,
+                                        Name: item.Name,
+                                        Description: item.Description,
+                                        secure_url: item.secure_url,
+                                        Price: item.Price,
+                                        NameCreator: item.NameCreator
+                                    })
+                                }}>
+                                <View style={styles.item}>
+                                    <View style={styles.frameUser}>
+                                        <View style={styles.imgBox}>
+                                            <Image style={styles.img} source={{uri: item.secure_url}} />
+                                        </View>
+                                        <Text style={styles.userName}>{item.NameCreator}</Text>
                                     </View>
-                                    <Text style={styles.userName}>{item.NameCreator}</Text>
+                                    <View style={styles.line}></View>
+                                    <View style={styles.frameName}>
+                                        <Text style={styles.textName}>{item.Name}</Text>
+                                    </View>
+                                    <View style={styles.frameDesc}>
+                                        <Text numberOfLines={3} style={styles.description}>
+                                            {item.Description}
+                                        </Text>
+                                    </View>
                                 </View>
-                                <View style={styles.line}></View>
-                                <View style={styles.frameName}>
-                                    <Text style={styles.textName}>{item.Name}</Text>
-                                </View>
-                                <View style={styles.frameDesc}>
-                                    <Text numberOfLines={3} style={styles.description}>
-                                        {item.Description}
-                                    </Text>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-                    )}
-                />
+                            </TouchableOpacity>
+                        )}
+                    />
+                </View>
             )}
         </View>
     )
@@ -112,6 +122,11 @@ function TasksCreated() {
 const styles = StyleSheet.create({
     scroll: {
         height: '100%'
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: '500',
+        textAlign: 'center'
     },
     item: {
         flex: 1,

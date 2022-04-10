@@ -57,8 +57,16 @@ function ListJob() {
 
     //Call api
     useEffect(() => {
-        handleGetTask()
-    }, [])
+        const unsubscribe = navigation.addListener('focus', () => {
+            console.log('Man hinh DetailJob')
+            handleGetTask()
+        })
+
+        return unsubscribe
+    }, [navigation])
+    // useEffect(() => {
+    //     handleGetTask()
+    // }, [])
 
     return (
         <View style={{backgroundColor: '#F3FFBD'}}>
@@ -72,7 +80,10 @@ function ListJob() {
                     renderItem={({item}) => (
                         <TouchableOpacity
                             onPress={() => {
+                                console.log('id task: ', item._id)
                                 navigation.navigate('DetailJob', {
+                                    _id: item._id,
+                                    ShowOnly: true,
                                     Name: item.Name,
                                     Description: item.Description,
                                     secure_url: item.secure_url,

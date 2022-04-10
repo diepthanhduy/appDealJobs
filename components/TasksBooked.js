@@ -21,6 +21,7 @@ import {useNavigation} from '@react-navigation/native'
 function TasksBooked() {
     const [isLoading, setLoading] = useState(true)
     const [dataTask, setData] = useState([])
+    const navigation = useNavigation()
 
     //show toast (Thông báo)
     const showToast = mess => {
@@ -61,8 +62,13 @@ function TasksBooked() {
 
     //Call api
     useEffect(() => {
-        handleGetTask()
-    }, [])
+        const unsubscribe = navigation.addListener('focus', () => {
+            console.log('Man hinh DetailJob')
+            handleGetTask()
+        })
+
+        return unsubscribe
+    }, [navigation])
 
     return (
         <View style={{backgroundColor: '#F3FFBD'}}>
@@ -79,6 +85,7 @@ function TasksBooked() {
                             <TouchableOpacity
                                 onPress={() => {
                                     navigation.navigate('DetailJob', {
+                                        ShowOnly: false,
                                         Name: item.Name,
                                         Description: item.Description,
                                         secure_url: item.secure_url,
